@@ -48,40 +48,15 @@ export default function VideoPlaylist({ files, initialVideoId, isOpen, onClose }
   // Update video URL when current video changes
   useEffect(() => {
     if (currentVideo) {
-      setCurrentVideoUrl(`https://drive.google.com/file/d/${currentVideo.id}/preview?quality=hd1080`);
-      setUrlAttempt(0);
+      // Use the preview URL directly which works reliably in iframes
+      setCurrentVideoUrl(`https://drive.google.com/file/d/${currentVideo.id}/preview`);
       setVideoError(false);
     }
   }, [currentVideo]);
 
-  const handleVideoError = async () => {
-    console.log(`Video error on attempt ${urlAttempt + 1} for video:`, currentVideo?.name);
-
-    if (urlAttempt === 0) {
-      setCurrentVideoUrl(`https://drive.google.com/file/d/${currentVideo.id}/preview?quality=hd720`);
-      setUrlAttempt(1);
-    } else if (urlAttempt === 1) {
-      setCurrentVideoUrl(`https://drive.google.com/file/d/${currentVideo.id}/preview`);
-      setUrlAttempt(2);
-    } else if (urlAttempt === 2) {
-      setCurrentVideoUrl(getVideoUrlEmbed(currentVideo.id));
-      setUrlAttempt(3);
-    } else {
-      setVideoError(true);
-    }
-  };
-
-  const handleVideoLoad = () => {
+  const handleIframeLoad = () => {
     setVideoError(false);
-    setIsRetrying(false);
-    console.log('Video loaded successfully');
-  };
-
-  const retryVideo = () => {
-    setIsRetrying(true);
-    setVideoError(false);
-    setUrlAttempt(0);
-    setCurrentVideoUrl(`https://drive.google.com/file/d/${currentVideo.id}/preview?quality=hd1080`);
+    console.log('Video iframe loaded');
   };
 
   const playNext = () => {
@@ -100,24 +75,6 @@ export default function VideoPlaylist({ files, initialVideoId, isOpen, onClose }
     setCurrentVideoIndex(index);
   };
 
-  const toggleFullscreen = () => {
-    if (videoRef.current) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        videoRef.current.requestFullscreen().catch(err => {
-          console.error("Error attempting to enable fullscreen:", err);
-        });
-      }
-    }
-  };
-
-  const seek = (seconds: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime += seconds;
-    }
-  };
-
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       onClose();
@@ -126,7 +83,9 @@ export default function VideoPlaylist({ files, initialVideoId, isOpen, onClose }
   };
 
   const handlePopOut = () => {
-    window.open('https://www.youtube.com/@ApnaCollegeOfficial', '_blank');
+    if (currentVideo) {
+      window.open(`https://drive.google.com/file/d/${currentVideo.id}/view`, '_blank');
+    }
   };
 
   if (!currentVideo || videoFiles.length === 0) return null;
@@ -165,30 +124,11 @@ export default function VideoPlaylist({ files, initialVideoId, isOpen, onClose }
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => seek(-10)}
-              className="text-white/70 hover:text-white hover:bg-white/10 hidden sm:flex"
-              title="Rewind 10s"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => seek(10)}
-              className="text-white/70 hover:text-white hover:bg-white/10 hidden sm:flex"
-              title="Forward 10s"
-            >
-              <RotateCw className="w-4 h-4" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleFullscreen}
+              onClick={handlePopOut}
               className="text-white/70 hover:text-white hover:bg-white/10"
-              title="Fullscreen"
+              title="Open in New Tab"
             >
-              <Maximize className="w-4 h-4" />
+              <ExternalLink className="w-4 h-4" />
             </Button>
 
             <Button
@@ -205,54 +145,15 @@ export default function VideoPlaylist({ files, initialVideoId, isOpen, onClose }
         <div className="flex flex-1 min-h-0 relative">
           {/* Video Player Area */}
           <div className={`flex-1 flex flex-col bg-black relative transition-all duration-300`}>
-            <div className="flex-1 relative w-full h-full flex items-center justify-center">
-              {videoError ? (
-                <div className="text-center text-white px-4">
-                  <p className="mb-2 text-lg font-semibold">Playback Error</p>
-                  <Button onClick={retryVideo} variant="outline" className="border-white/20 text-white bg-transparent hover:bg-white/10 mt-4">
-                    <RefreshCw className="w-4 h-4 mr-2" /> Retry
-                  </Button>
-                </div>
-              ) : isRetrying ? (
-                <div className="text-center text-white">
-                  <RefreshCw className="w-10 h-10 animate-spin mx-auto mb-4 text-primary" />
-                  <p className="text-lg font-medium">Reconnecting...</p>
-                </div>
-              ) : (
-                <>
-                  {urlAttempt < 2 ? (
-                    <video
-                      ref={videoRef}
-                      controls
-                      playsInline
-                      className="w-full h-full max-h-full object-contain"
-                      onError={handleVideoError}
-                      onLoadedData={handleVideoLoad}
-                      onCanPlay={handleVideoLoad}
-                      onEnded={() => {
-                        if (currentVideoIndex < videoFiles.length - 1) {
-                          setTimeout(() => playNext(), 1000);
-                        }
-                      }}
-                      autoPlay={true}
-                    >
-                      <source src={currentVideoUrl} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  ) : (
-                    <iframe
-                      src={currentVideoUrl}
-                      className="w-full h-full border-0"
-                      onError={handleVideoError}
-                      onLoad={handleVideoLoad}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  )}
-                </>
-              )}
+            <div className="flex-1 relative w-full h-full flex items-center justify-center bg-black">
+              <iframe
+                src={currentVideoUrl}
+                className="w-full h-full border-0"
+                onLoad={handleIframeLoad}
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+              />
             </div>
-            {/* Custom bottom controls removed to rely on native controls for better mobile compatibility */}
           </div>
 
           {/* Playlist Sidebar */}
