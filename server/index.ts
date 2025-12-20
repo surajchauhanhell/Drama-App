@@ -39,8 +39,8 @@ app.use((req, res, next) => {
 });
 
 // Initialize routes and server
-// We use top-level await which is supported in modern Node/TS environments
-const server = await registerRoutes(app);
+// Note: We removed top-level await to be compatible with Vercel Serverless Functions
+const server = registerRoutes(app);
 
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const status = err.status || err.statusCode || 500;
@@ -52,7 +52,9 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 
 // Setup Vite or Static serving
 if (app.get("env") === "development") {
-  await setupVite(app, server);
+  (async () => {
+    await setupVite(app, server);
+  })();
 } else {
   serveStatic(app);
 }
