@@ -224,7 +224,7 @@ export default function FileGrid() {
 
           <div className="flex items-center gap-2">
             <Select value={sortField} onValueChange={(value: SortField) => setSortField(value)}>
-              <SelectTrigger className="glass-input w-[110px] h-10 border-white/5" data-testid="select-sort-field">
+              <SelectTrigger className="glass-input w-[120px] h-11 border-white/5" data-testid="select-sort-field">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-black/90 border-white/10 text-white backdrop-blur-xl">
@@ -238,20 +238,20 @@ export default function FileGrid() {
               variant="outline"
               size="icon"
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="glass-input w-10 h-10 border-white/5 hover:bg-white/10 hover:text-white"
+              className="glass-input w-11 h-11 border-white/5 hover:bg-white/10 hover:text-white"
               data-testid="button-toggle-sort-order"
             >
-              <ArrowUpDown className="w-4 h-4" />
+              <ArrowUpDown className="w-5 h-5" />
             </Button>
 
             <Button
               variant="outline"
               size="icon"
               onClick={handleRefresh}
-              className="glass-input w-10 h-10 border-white/5 hover:bg-white/10 hover:text-white"
+              className="glass-input w-11 h-11 border-white/5 hover:bg-white/10 hover:text-white"
               data-testid="button-refresh"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-5 h-5" />
             </Button>
           </div>
         </div>

@@ -58,14 +58,14 @@ export default function Home() {
   return (
     <div className="min-h-screen gradient-bg flex flex-col">
       {/* Premium Glass Header */}
-      <header className="sticky top-4 z-50 px-4 md:px-8">
+      <header className="sticky top-2 md:top-4 z-50 px-2 md:px-8">
         <div className="glass rounded-2xl max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-16 md:h-20">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-white font-black text-xl">D</span>
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+                <span className="text-white font-black text-lg md:text-xl">D</span>
               </div>
-              <h1 className="text-2xl font-black text-white tracking-tight hidden sm:block" data-testid="text-app-title">
+              <h1 className="text-xl md:text-2xl font-black text-white tracking-tight" data-testid="text-app-title">
                 Drama
               </h1>
             </div>
@@ -120,7 +120,7 @@ export default function Home() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-2 md:px-4 sm:px-6 lg:px-8 py-4 md:py-12">
         <FileGrid />
       </main>
     </div>
