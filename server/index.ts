@@ -56,7 +56,16 @@ if (app.get("env") === "development") {
     await setupVite(app, server);
   })();
 } else {
-  serveStatic(app);
+  // On Vercel, static files are served by the platform.
+  // We attempt to serve them for other environments, but don't hard crash if missing.
+  try {
+    serveStatic(app);
+  } catch (err) {
+    // Only log if not on Vercel to avoid noise
+    if (!process.env.VERCEL) {
+      console.warn("Static assets not found, skipping static serving.");
+    }
+  }
 }
 
 // Serve on port if running directly
