@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/ott_library_tab.dart';
 import '../widgets/device_videos_tab.dart';
+import 'downloads_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -76,11 +77,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             icon: Icon(_isSearching ? Icons.close : Icons.search),
             onPressed: _toggleSearch,
           ),
-           // Optional: Profile or notification icon if needed
-           if (!_isSearching)
+          // Optional: Profile or notification icon if needed
+          if (!_isSearching)
             IconButton(
-               icon: const Icon(Icons.shopping_bag_outlined), // Placeholder for bag/profile
-               onPressed: () {},
+              icon: const Icon(Icons.shopping_bag_outlined), // Placeholder for bag/profile
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DownloadsScreen()),
+                );
+              },
             ),
         ],
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/drive_file.dart';
+
 import '../services/drive_service.dart';
+import '../services/download_service.dart';
 import '../screens/video_player_screen.dart';
 
 class OttLibraryTab extends StatefulWidget {
@@ -445,8 +447,138 @@ class _MovieCard extends StatelessWidget {
                 ),
               ),
             ),
+            // Download Button (Top Right)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: _DownloadButton(file: file),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DownloadButton extends StatefulWidget {
+  final DriveFile file;
+  const _DownloadButton({required this.file});
+
+  @override
+  State<_DownloadButton> createState() => _DownloadButtonState();
+}
+
+class _DownloadButtonState extends State<_DownloadButton> {
+  final DownloadService _downloadService = DownloadService();
+  bool _isDownloading = false;
+  double _progress = 0.0;
+  bool _isDownloaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkStatus();
+  }
+
+  Future<void> _checkStatus() async {
+    final downloads = await _downloadService.getDownloads();
+    final isDownloaded = downloads.any((d) => d['id'] == widget.file.id);
+    final isDownloading = _downloadService.isDownloading(widget.file.id);
+    
+    if (mounted) {
+      setState(() {
+        _isDownloaded = isDownloaded;
+        _isDownloading = isDownloading;
+        if (isDownloading) {
+          _progress = _downloadService.getProgress(widget.file.id);
+        }
+      });
+    }
+  }
+
+  Future<void> _startDownload() async {
+    setState(() => _isDownloading = true);
+    
+    try {
+      final driveService = DriveService();
+      final url = driveService.getVideoUrl(widget.file.id);
+      
+      await _downloadService.downloadVideo(
+        url: url,
+        fileName: "${widget.file.name}.mp4",
+        title: widget.file.name,
+        driveId: widget.file.id,
+        onProgress: (p) {
+          if (mounted) setState(() => _progress = p);
+        },
+      );
+
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+          _isDownloaded = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${widget.file.name} downloaded!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDownloading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('Download failed: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isDownloaded) {
+      return Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.green.withOpacity(0.8),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.check, color: Colors.white, size: 16),
+      );
+    }
+
+    if (_isDownloading) {
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.6),
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(
+            width: 24, 
+            height: 24, 
+            child: CircularProgressIndicator(
+              value: _progress, 
+              strokeWidth: 2, 
+              color: Colors.white,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return GestureDetector(
+      onTap: _startDownload,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.6),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.download, color: Colors.white, size: 18),
       ),
     );
   }
