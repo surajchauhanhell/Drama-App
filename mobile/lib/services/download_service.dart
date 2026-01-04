@@ -22,6 +22,7 @@ class DownloadService {
     required String url,
     required String fileName,
     required String title,
+    required String folderName,
     required String driveId,
     Function(double)? onProgress,
   }) async {
@@ -63,7 +64,13 @@ class DownloadService {
       );
 
       // Save metadata
-      await _saveMetadata(driveId: driveId, title: title, fileName: fileName, filePath: savePath);
+      await _saveMetadata(
+        driveId: driveId, 
+        title: title, 
+        folderName: folderName,
+        fileName: fileName, 
+        filePath: savePath
+      );
       
       _activeDownloads.remove(driveId);
       _cancelTokens.remove(driveId);
@@ -155,6 +162,7 @@ class DownloadService {
   Future<void> _saveMetadata({
     required String driveId,
     required String title,
+    required String folderName,
     required String fileName,
     required String filePath,
   }) async {
@@ -171,6 +179,7 @@ class DownloadService {
     final newItem = {
       'id': driveId,
       'title': title,
+      'folderName': folderName,
       'fileName': fileName,
       'path': filePath,
       'downloadedAt': DateTime.now().toIso8601String(),

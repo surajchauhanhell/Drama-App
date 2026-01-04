@@ -191,6 +191,7 @@ class _OttLibraryTabState extends State<OttLibraryTab> {
                       return _MovieCard(
                         file: file,
                         thumbnailUrl: _currentFolderBannerUrl,
+                        folderName: _currentFolderName,
                         onTap: () {
                           // Build playlist only from videos in this current view
                           final videoFiles = filteredFiles.where((f) => f.mimeType.contains('video')).toList();
@@ -349,11 +350,13 @@ class _FolderCardState extends State<_FolderCard> {
 class _MovieCard extends StatelessWidget {
   final DriveFile file;
   final String? thumbnailUrl;
+  final String folderName;
   final VoidCallback onTap;
 
   const _MovieCard({
     required this.file, 
     this.thumbnailUrl,
+    required this.folderName,
     required this.onTap
   });
 
@@ -451,7 +454,7 @@ class _MovieCard extends StatelessWidget {
             Positioned(
               top: 8,
               right: 8,
-              child: _DownloadButton(file: file),
+              child: _DownloadButton(file: file, folderName: folderName),
             ),
           ],
         ),
@@ -462,7 +465,8 @@ class _MovieCard extends StatelessWidget {
 
 class _DownloadButton extends StatefulWidget {
   final DriveFile file;
-  const _DownloadButton({required this.file});
+  final String folderName;
+  const _DownloadButton({required this.file, required this.folderName});
 
   @override
   State<_DownloadButton> createState() => _DownloadButtonState();
@@ -507,6 +511,7 @@ class _DownloadButtonState extends State<_DownloadButton> {
         url: url,
         fileName: "${widget.file.name}.mp4",
         title: widget.file.name,
+        folderName: widget.folderName,
         driveId: widget.file.id,
         onProgress: (p) {
           if (mounted) setState(() => _progress = p);
